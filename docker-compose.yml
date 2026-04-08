@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  congroup-analytics:
+    build: .
+    container_name: congroup-analytics-dashboard
+    ports:
+      - "8052:8052"
+    environment:
+      - PORT=8052
+      - PYTHONUNBUFFERED=1
+      - DEBUG=false
+    volumes:
+      # Montar base de datos para persistencia
+      - ./mazda.duckdb:/app/mazda.duckdb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8052')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - congroup-network
+
+networks:
+  congroup-network:
+    driver: bridge
