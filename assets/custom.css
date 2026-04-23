@@ -1,0 +1,30 @@
+/* ── Custom tab styles ───────────────────────────────────────────────────── */
+
+.nav-tabs {
+    border-bottom: 2px solid #1B3A6B;
+}
+
+.nav-tabs .nav-link {
+    color: #1B3A6B;
+    background-color: #E2E8F0;
+    border: 1px solid #CBD5E1;
+    border-bottom-color: transparent;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
+    margin-right: 4px;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #D6E4F5;
+    border-color: #A0B4D0;
+    color: #1B3A6B;
+}
+
+.nav-tabs .nav-link.active {
+    color: #FFFFFF;
+    background-color: #1B3A6B;
+    border-color: #1B3A6B #1B3A6B #FFFFFF;
+    border-bottom: 2px solid #1B3A6B;
+}

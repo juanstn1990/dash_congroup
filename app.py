@@ -16,6 +16,7 @@ from datetime import datetime
 
 # Importar queries
 from queries import resumen_vendedores_filtrado, ventas_por_vendedor_tipo, get_connection
+from pages.balance import balance_content, register_callbacks as _register_balance_callbacks
 
 # ── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
 AZUL = "#1B3A6B"
@@ -65,6 +66,10 @@ app = dash.Dash(
     url_base_pathname='/'
 )
 
+# Build balance content once and register its callbacks
+_balance_content = balance_content()
+_register_balance_callbacks()
+
 # ── COMPONENTES UI ────────────────────────────────────────────────────────────
 def sidebar(username, current_path):
     def nav_link(href, icon, text):
@@ -88,6 +93,7 @@ def sidebar(username, current_path):
         html.Hr(style={'borderColor': '#2E4A7A'}),
         html.P("Navegación", style={'color': '#E2EAF4', 'fontWeight': '600', 'marginBottom': '1rem'}),
         nav_link('/', '📊', 'Resumen de Vendedores'),
+        nav_link('/balance', '📋', 'Balance P&G'),
         html.Hr(style={'borderColor': '#2E4A7A', 'margin': '1rem 0'}),
         html.Small(f'👤 {username}', style={'color': '#94B8E0', 'display': 'block', 'marginBottom': '1rem', 'padding': '0 10px'}),
         html.A('🚪 Cerrar sesión', href='/logout', style={
@@ -100,7 +106,7 @@ def sidebar(username, current_path):
             'textDecoration': 'none',
             'fontWeight': '600'
         })
-    ], style={
+    ], id='sidebar-wrapper', style={
         'position': 'fixed',
         'top': 0,
         'left': 0,
@@ -108,7 +114,9 @@ def sidebar(username, current_path):
         'width': '250px',
         'background': AZUL,
         'padding': '1rem',
-        'overflowY': 'auto'
+        'overflowY': 'auto',
+        'transition': 'all 0.3s ease',
+        'zIndex': '900'
     })
 
 def login_form(error=False):
@@ -359,7 +367,7 @@ def resumen_vendedores_page():
             ], style={'background': 'white', 'padding': '20px', 'borderRadius': '8px',
                      'boxShadow': '0 2px 4px rgba(0,0,0,0.1)', 'marginBottom': '20px'})
 
-        ], style={'marginLeft': '270px', 'padding': '2rem', 'background': GRIS, 'minHeight': '100vh'})
+        ], id='main-content', style={'marginLeft': '270px', 'padding': '2rem', 'background': GRIS, 'minHeight': '100vh', 'transition': 'margin-left 0.3s ease'})
     ])
 
 # ── RUTAS FLASK ───────────────────────────────────────────────────────────────
@@ -371,6 +379,15 @@ def logout():
 # ── LAYOUT DASH ───────────────────────────────────────────────────────────────
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
+    html.Div(id='sidebar-dummy', style={'display': 'none'}),
+    html.Div(id='url-dummy', style={'display': 'none'}),
+    html.Button('☰', id='sidebar-toggle', n_clicks=0, style={
+        'position': 'fixed', 'top': '10px', 'left': '10px', 'zIndex': '1000',
+        'background': AZUL, 'color': 'white', 'border': 'none',
+        'padding': '10px 14px', 'borderRadius': '8px', 'fontSize': '18px',
+        'cursor': 'pointer', 'boxShadow': '0 2px 8px rgba(0,0,0,0.2)',
+        'display': 'none'
+    }),
     html.Div(id='page-content')
 ])
 
@@ -398,6 +415,18 @@ def display_page(pathname):
     if not current_user.is_authenticated:
         error = 'error=1' in request.url
         return login_form(error=error)
+
+    if pathname == '/balance':
+        return html.Div([
+            sidebar(current_user.id, '/balance'),
+            html.Div([
+                html.Div([
+                    html.H1("📋 Balance",
+                           style={'color': 'white', 'margin': '0', 'padding': '20px'})
+                ], style={'background': AZUL, 'marginBottom': '12px', 'borderRadius': '8px'}),
+                _balance_content,
+            ], id='main-content', style={'marginLeft': '270px', 'padding': '1rem', 'background': GRIS, 'minHeight': '100vh', 'transition': 'margin-left 0.3s ease'})
+        ])
 
     # Dashboard de Resumen de Vendedores
     return resumen_vendedores_page()
@@ -704,6 +733,27 @@ def actualizar_dashboard(anio, mes):
         )
 
     return kpis, fig1, fig2, fig3, fig4, tabla, tabla_tipo, fig_tipo
+
+# ── Client-side callbacks para sidebar colapsable ────────────────────────────
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        return window.dash_clientside.sidebar.toggle(n_clicks);
+    }
+    """,
+    Output('sidebar-dummy', 'children'),
+    Input('sidebar-toggle', 'n_clicks')
+)
+
+app.clientside_callback(
+    """
+    function(pathname) {
+        return window.dash_clientside.sidebar.restore(pathname);
+    }
+    """,
+    Output('url-dummy', 'children'),
+    Input('url', 'pathname')
+)
 
 # ── EJECUTAR ──────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
