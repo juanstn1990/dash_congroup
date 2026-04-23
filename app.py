@@ -32,7 +32,10 @@ GRIS_MED = "#E2E8F0"
 TEXTO = "#1C2B3A"
 GRIS_TEXT = "#64748B"
 
-VALID_USERS = {'admin': 'admin'}
+VALID_USERS = {
+    'admin': 'admin',
+    'contabilidad_grupocars': 'contabilidad_grupocars',
+}
 
 # ── USUARIO SIMPLE ────────────────────────────────────────────────────────────
 class User(UserMixin):

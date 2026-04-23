@@ -40,11 +40,18 @@ def _con():
 def get_filter_options():
     con = _con()
     empresas = con.execute(
-        'SELECT DISTINCT "Empresa Nombre" FROM mazda.main.balance ORDER BY 1'
-    ).fetchdf()["Empresa Nombre"].tolist()
+        'SELECT DISTINCT empresa FROM mazda.main.dim_empresa ORDER BY 1'
+    ).fetchdf()["empresa"].tolist()
     años = con.execute(
-        'SELECT DISTINCT Año FROM mazda.main.balance ORDER BY 1 DESC'
-    ).fetchdf()["Año"].tolist()
+        """
+        SELECT DISTINCT dt.año
+        FROM mazda.main.dim_tiempo dt
+        WHERE EXISTS (
+            SELECT 1 FROM mazda.main.balance b WHERE CAST(b."Año" AS INT) = dt.año
+        )
+        ORDER BY 1 DESC
+        """
+    ).fetchdf()["año"].tolist()
     con.close()
     return empresas, años
 
@@ -258,6 +265,315 @@ def _build_table(df_rows, meses):
                       else "#1C2B3A")
 
             # porcentaje: verde/rojo según signo
+            pct_fg = (fg if is_total
+                      else VERDE if (pct is not None and not pd.isna(pct) and pct > 0)
+                      else ROJO  if (pct is not None and not pd.isna(pct) and pct < 0)
+                      else "#888")
+
+            cells.append(_td(_fmt(val), bg=bg, fg=val_fg, right=True,
+                             bold=is_total, border_left=(col_i < len(meses))))
+            cells.append(_td(_fmt(pct, pct=True), bg=bg, fg=pct_fg, right=True))
+
+        data_rows.append(html.Tr(cells))
+
+    return html.Div(
+        html.Table(
+            [
+                html.Thead([html.Tr(hdr1), html.Tr(hdr2)]),
+                html.Tbody(data_rows),
+            ],
+            style={
+                "width": "100%",
+                "borderCollapse": "collapse",
+                "fontSize": "13px",
+                "fontFamily": "Inter, sans-serif",
+            },
+        ),
+        style={"overflowX": "auto", "overflowY": "auto", "maxHeight": "calc(100vh - 210px)"},
+    )
+
+
+# ── Resultado vs Presupuesto ──────────────────────────────────────────────────
+
+def _load_and_build_vs_ppto(empresa, año):
+    df_real, meses_real = _load_and_build(empresa, año)
+    df_ppto, meses_ppto = _load_and_build_ppto(empresa, año)
+
+    if df_real.empty and df_ppto.empty:
+        return pd.DataFrame(), []
+
+    meses = sorted(set(meses_real) | set(meses_ppto))
+    cols = meses + ["Total"]
+
+    ppto_lookup = {row["Categoria"]: row for _, row in df_ppto.iterrows()} if not df_ppto.empty else {}
+
+    rows = []
+    base = df_real if not df_real.empty else df_ppto
+    for _, row in base.iterrows():
+        cat = row["Categoria"]
+        ppto_row = ppto_lookup.get(cat, {})
+        r = {
+            "Categoria": cat,
+            "Concepto": row["Concepto"],
+            "is_total": row["is_total"],
+        }
+        for col in cols:
+            real_val = (row.get(f"res_{col}", 0) or 0) if not df_real.empty else 0
+            ppto_val = ppto_row.get(f"ppto_{col}", 0) or 0
+            diff = real_val - ppto_val
+            var_pct = (diff / abs(ppto_val) * 100) if ppto_val != 0 else None
+            r[f"real_{col}"] = real_val
+            r[f"ppto_{col}"] = ppto_val
+            r[f"diff_{col}"] = diff
+            r[f"var_{col}"] = var_pct
+        rows.append(r)
+
+    return pd.DataFrame(rows), meses
+
+
+def _build_vs_ppto_table(df_rows, meses):
+    if df_rows is None or df_rows.empty:
+        return html.Div(
+            "No hay datos para los filtros seleccionados.",
+            style={"padding": "40px", "textAlign": "center", "color": "#888"},
+        )
+
+    cols = meses + ["Total"]
+
+    def _hdr_bg(i):
+        if i >= len(meses):
+            return "#163266"
+        return AZUL_ALT if i % 2 == 1 else AZUL
+
+    def _data_bg(col_i, row_i, is_total_row):
+        if is_total_row:
+            return GRIS_TOTAL
+        stripe = row_i % 2 == 1
+        if col_i >= len(meses):
+            return COL_TOT_STRIPE if stripe else COL_TOT
+        if col_i % 2 == 1:
+            return COL_ODD_STRIPE if stripe else COL_ODD
+        return ROW_STRIPE if stripe else "white"
+
+    def _sticky_bg(is_total_row, row_i):
+        if is_total_row:
+            return GRIS_TOTAL
+        return ROW_STRIPE if row_i % 2 == 1 else "white"
+
+    # ── Header row 1 ──────────────────────────────────────────────────────────
+    hdr1 = [
+        _th("Categoría", top="0px", left="0px", rowspan=2),
+        _th("Concepto",  top="0px", left=CAT_W, rowspan=2),
+    ]
+    for i, m in enumerate(meses):
+        hdr1.append(_th(MESES_LABELS.get(m, str(m)), colspan=4, center=True, bg=_hdr_bg(i)))
+    hdr1.append(_th("Total", colspan=4, center=True, bg=_hdr_bg(len(meses))))
+
+    # ── Header row 2 ──────────────────────────────────────────────────────────
+    hdr2 = []
+    for i in range(len(cols)):
+        bg = _hdr_bg(i)
+        hdr2.append(_th("Real",            center=True, top="32px", bg=bg))
+        hdr2.append(_th("Presupuesto",     center=True, top="32px", bg=bg))
+        hdr2.append(_th("Real - Ppto",     center=True, top="32px", bg=bg))
+        hdr2.append(_th("% Variación",     center=True, top="32px", bg=bg))
+
+    # ── Data rows ─────────────────────────────────────────────────────────────
+    data_rows = []
+    for row_i, (_, row) in enumerate(df_rows.iterrows()):
+        is_total = row["is_total"]
+        fg       = "white" if is_total else "#1C2B3A"
+        s_bg     = _sticky_bg(is_total, row_i)
+
+        cells = [
+            _td(row["Categoria"] or "", bg=s_bg, fg=fg, bold=True, left="0px"),
+            _td(row["Concepto"]  or "", bg=s_bg, fg=fg, bold=is_total,
+                left=CAT_W, indent=not is_total),
+        ]
+        for col_i, col in enumerate(cols):
+            bg = _data_bg(col_i, row_i, is_total)
+
+            real_val = row.get(f"real_{col}", 0) or 0
+            ppto_val = row.get(f"ppto_{col}", 0) or 0
+            diff_val = row.get(f"diff_{col}", 0) or 0
+            var_pct  = row.get(f"var_{col}")
+
+            real_fg = (fg if is_total else ROJO if real_val < 0 else "#1C2B3A")
+            ppto_fg = (fg if is_total else ROJO if ppto_val < 0 else "#1C2B3A")
+            diff_fg = (fg if is_total
+                       else VERDE if diff_val > 0
+                       else ROJO  if diff_val < 0
+                       else "#1C2B3A")
+            var_fg  = (fg if is_total
+                       else VERDE if (var_pct is not None and not pd.isna(var_pct) and var_pct > 0)
+                       else ROJO  if (var_pct is not None and not pd.isna(var_pct) and var_pct < 0)
+                       else "#888")
+
+            cells.append(_td(_fmt(real_val), bg=bg, fg=real_fg, right=True,
+                              bold=is_total, border_left=(col_i < len(meses))))
+            cells.append(_td(_fmt(ppto_val), bg=bg, fg=ppto_fg, right=True, bold=is_total))
+            cells.append(_td(_fmt(diff_val), bg=bg, fg=diff_fg, right=True, bold=is_total))
+            cells.append(_td(_fmt(var_pct, pct=True), bg=bg, fg=var_fg, right=True))
+
+        data_rows.append(html.Tr(cells))
+
+    return html.Div(
+        html.Table(
+            [
+                html.Thead([html.Tr(hdr1), html.Tr(hdr2)]),
+                html.Tbody(data_rows),
+            ],
+            style={
+                "width": "100%",
+                "borderCollapse": "collapse",
+                "fontSize": "13px",
+                "fontFamily": "Inter, sans-serif",
+            },
+        ),
+        style={"overflowX": "auto", "overflowY": "auto", "maxHeight": "calc(100vh - 210px)"},
+    )
+
+
+# ── Presupuesto ───────────────────────────────────────────────────────────────
+
+def _load_and_build_ppto(empresa, año):
+    con = _con()
+
+    empresa_code = None
+    if empresa and empresa != "Todas":
+        row = con.execute(
+            "SELECT code FROM mazda.main.dim_empresa WHERE empresa = ?", [empresa]
+        ).fetchone()
+        if row:
+            empresa_code = int(row[0])
+
+    conditions = []
+    if empresa_code is not None:
+        conditions.append(f"Empresa = {empresa_code}")
+    if año and año != "Todos":
+        conditions.append(f"Año = '{año}'")
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    df_leaf = con.execute(f"""
+        SELECT Categoria, CAST(Mes AS INT) AS Mes, SUM(TotalBase) AS TotalBase
+        FROM mazda.main.ppto_mensual
+        {where}
+        GROUP BY Categoria, Mes
+    """).fetchdf()
+
+    plantilla = con.execute(
+        "SELECT * FROM mazda.main.plantilla_resultado ORDER BY N"
+    ).fetchdf()
+    con.close()
+
+    if df_leaf.empty:
+        return pd.DataFrame(), []
+
+    cat_values: dict[str, dict] = {}
+    for _, row in df_leaf.iterrows():
+        mes = int(row["Mes"])
+        cat_values.setdefault(row["Categoria"], {})[mes] = row["TotalBase"]
+
+    meses = sorted({m for cv in cat_values.values() for m in cv})
+
+    for _, t_row in plantilla[
+        plantilla["Categoria"].str.startswith("T", na=False)
+    ].iterrows():
+        t_cat = t_row["Categoria"]
+        children = plantilla[plantilla["GrupoPadre"] == t_cat]["Categoria"].tolist()
+        cat_values.setdefault(t_cat, {})
+        for m in meses:
+            cat_values[t_cat][m] = sum(
+                cat_values.get(c, {}).get(m, 0) or 0 for c in children
+            )
+
+    for cat in cat_values:
+        cat_values[cat]["Total"] = sum(cat_values[cat].get(m, 0) or 0 for m in meses)
+
+    cols = meses + ["Total"]
+    rows = []
+    for _, pr in plantilla.iterrows():
+        cat = pr["Categoria"]
+        denom_cats = _parse_denom_cats(pr["Porcentaje"])
+        vals = cat_values.get(cat, {})
+
+        r: dict = {
+            "Categoria": cat,
+            "Concepto": pr["Concepto"],
+            "is_total": str(cat).startswith("T"),
+        }
+        for col in cols:
+            val = vals.get(col, 0) or 0
+            denom = sum(cat_values.get(c, {}).get(col, 0) or 0 for c in denom_cats)
+            r[f"ppto_{col}"] = val
+            r[f"pct_{col}"] = (val / denom * 100) if denom != 0 else None
+        rows.append(r)
+
+    return pd.DataFrame(rows), meses
+
+
+def _build_ppto_table(df_rows, meses):
+    if df_rows is None or df_rows.empty:
+        return html.Div(
+            "No hay datos para los filtros seleccionados.",
+            style={"padding": "40px", "textAlign": "center", "color": "#888"},
+        )
+
+    cols = meses + ["Total"]
+
+    def _hdr_bg(i):
+        if i >= len(meses):
+            return "#163266"
+        return AZUL_ALT if i % 2 == 1 else AZUL
+
+    def _data_bg(col_i, row_i, is_total_row):
+        if is_total_row:
+            return GRIS_TOTAL
+        stripe = row_i % 2 == 1
+        if col_i >= len(meses):
+            return COL_TOT_STRIPE if stripe else COL_TOT
+        if col_i % 2 == 1:
+            return COL_ODD_STRIPE if stripe else COL_ODD
+        return ROW_STRIPE if stripe else "white"
+
+    def _sticky_bg(is_total_row, row_i):
+        if is_total_row:
+            return GRIS_TOTAL
+        return ROW_STRIPE if row_i % 2 == 1 else "white"
+
+    hdr1 = [
+        _th("Categoría", top="0px", left="0px", rowspan=2),
+        _th("Concepto",  top="0px", left=CAT_W, rowspan=2),
+    ]
+    for i, m in enumerate(meses):
+        hdr1.append(_th(MESES_LABELS.get(m, str(m)), colspan=2, center=True, bg=_hdr_bg(i)))
+    hdr1.append(_th("Total", colspan=2, center=True, bg=_hdr_bg(len(meses))))
+
+    hdr2 = []
+    for i in range(len(cols)):
+        hdr2.append(_th("Presupuesto", center=True, top="32px", bg=_hdr_bg(i)))
+        hdr2.append(_th("%",           center=True, top="32px", bg=_hdr_bg(i)))
+
+    data_rows = []
+    for row_i, (_, row) in enumerate(df_rows.iterrows()):
+        is_total = row["is_total"]
+        fg       = "white" if is_total else "#1C2B3A"
+        s_bg     = _sticky_bg(is_total, row_i)
+
+        cells = [
+            _td(row["Categoria"] or "", bg=s_bg, fg=fg, bold=True,  left="0px"),
+            _td(row["Concepto"]  or "", bg=s_bg, fg=fg, bold=is_total,
+                left=CAT_W, indent=not is_total),
+        ]
+        for col_i, col in enumerate(cols):
+            bg  = _data_bg(col_i, row_i, is_total)
+            val = row.get(f"ppto_{col}", 0) or 0
+            pct = row.get(f"pct_{col}")
+
+            val_fg = (fg if is_total
+                      else ROJO if val < 0
+                      else "#1C2B3A")
+
             pct_fg = (fg if is_total
                       else VERDE if (pct is not None and not pd.isna(pct) and pct > 0)
                       else ROJO  if (pct is not None and not pd.isna(pct) and pct < 0)
@@ -790,6 +1106,82 @@ def balance_content():
                         ),
                     ),
                     dbc.Tab(
+                        label="Resultado vs Presupuesto",
+                        tab_id="tab-vs-ppto",
+                        children=html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.H4(
+                                            "Resultado vs Presupuesto",
+                                            style={
+                                                "margin": "0",
+                                                "color": AZUL,
+                                                "fontWeight": "700",
+                                                "fontSize": "16px",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "display": "flex",
+                                        "justifyContent": "space-between",
+                                        "alignItems": "center",
+                                        "padding": "14px 20px",
+                                        "borderBottom": "1px solid #E2E8F0",
+                                    },
+                                ),
+                                html.Div(
+                                    id="vs-ppto-table",
+                                    style={
+                                        "background": "white",
+                                        "borderRadius": "8px",
+                                        "boxShadow": "0 2px 4px rgba(0,0,0,0.08)",
+                                        "overflow": "hidden",
+                                    },
+                                ),
+                            ],
+                            style={"paddingTop": "16px"},
+                        ),
+                    ),
+                    dbc.Tab(
+                        label="Presupuesto",
+                        tab_id="tab-presupuesto",
+                        children=html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.H4(
+                                            "Presupuesto",
+                                            style={
+                                                "margin": "0",
+                                                "color": AZUL,
+                                                "fontWeight": "700",
+                                                "fontSize": "16px",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "display": "flex",
+                                        "justifyContent": "space-between",
+                                        "alignItems": "center",
+                                        "padding": "14px 20px",
+                                        "borderBottom": "1px solid #E2E8F0",
+                                    },
+                                ),
+                                html.Div(
+                                    id="ppto-table",
+                                    style={
+                                        "background": "white",
+                                        "borderRadius": "8px",
+                                        "boxShadow": "0 2px 4px rgba(0,0,0,0.08)",
+                                        "overflow": "hidden",
+                                    },
+                                ),
+                            ],
+                            style={"paddingTop": "16px"},
+                        ),
+                    ),
+                    dbc.Tab(
                         label="Resultado vs Ejercicio Anterior",
                         tab_id="tab-vs",
                         children=html.Div(
@@ -924,3 +1316,19 @@ def register_callbacks():
             options,
             mes_seleccionado,
         )
+
+    @callback(
+        Output("ppto-table", "children"),
+        [Input("bal-empresa", "value"), Input("bal-año", "value")],
+    )
+    def _update_ppto(empresa, año):
+        df_rows, meses = _load_and_build_ppto(empresa, año)
+        return _build_ppto_table(df_rows, meses)
+
+    @callback(
+        Output("vs-ppto-table", "children"),
+        [Input("bal-empresa", "value"), Input("bal-año", "value")],
+    )
+    def _update_vs_ppto(empresa, año):
+        df_rows, meses = _load_and_build_vs_ppto(empresa, año)
+        return _build_vs_ppto_table(df_rows, meses)
