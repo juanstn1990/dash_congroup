@@ -161,7 +161,7 @@ def _th(text, colspan=1, rowspan=1, center=False, top="0px", bg=None, left=None)
         "fontWeight": "600",
         "textAlign": "center" if center else "left",
         "verticalAlign": "middle",
-        "border": "1px solid #FFFFFF",
+        "boxShadow": "inset 0 0 0 1px #FFFFFF",
         "fontSize": "12px",
         "whiteSpace": "nowrap",
         "position": "sticky",

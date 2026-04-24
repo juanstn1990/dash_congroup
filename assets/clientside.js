@@ -7,74 +7,56 @@ window.dash_clientside.sidebar = {
         if (!n_clicks) return window.dash_clientside.no_update;
 
         var sidebar = document.getElementById('sidebar-wrapper');
-        var mainContent = document.getElementById('main-content');
-        var toggleBtn = document.getElementById('sidebar-toggle');
-
         if (!sidebar) return window.dash_clientside.no_update;
 
-        var isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+        var isCollapsed = document.body.classList.contains('sidebar-collapsed');
         var newState = !isCollapsed;
-        localStorage.setItem('sidebar-collapsed', newState);
+
+        localStorage.setItem('sidebar-collapsed', newState ? 'true' : 'false');
 
         if (newState) {
-            sidebar.style.width = '0px';
-            sidebar.style.padding = '0px';
-            sidebar.style.overflow = 'hidden';
-            if (mainContent) mainContent.style.marginLeft = '0px';
-            if (toggleBtn) {
-                toggleBtn.style.left = '10px';
-                toggleBtn.innerHTML = '→';
-            }
+            document.body.classList.add('sidebar-collapsed');
         } else {
-            sidebar.style.width = '250px';
-            sidebar.style.padding = '1rem';
-            sidebar.style.overflowY = 'auto';
-            if (mainContent) mainContent.style.marginLeft = '270px';
-            if (toggleBtn) {
-                toggleBtn.style.left = '260px';
-                toggleBtn.innerHTML = '☰';
-            }
+            document.body.classList.remove('sidebar-collapsed');
         }
+
+        var btn = document.getElementById('sidebar-toggle');
+        if (btn) btn.textContent = newState ? '›' : '‹';
 
         return window.dash_clientside.no_update;
     },
 
     restore: function(pathname) {
-        var sidebar = document.getElementById('sidebar-wrapper');
-        var mainContent = document.getElementById('main-content');
-        var toggleBtn = document.getElementById('sidebar-toggle');
+        var btn = document.getElementById('sidebar-toggle');
 
-        if (toggleBtn) {
+        function applyState() {
+            var sidebar = document.getElementById('sidebar-wrapper');
             if (!sidebar) {
-                toggleBtn.style.display = 'none';
-                return window.dash_clientside.no_update;
+                if (btn) btn.style.display = 'none';
+                return false;
             }
-            toggleBtn.style.display = 'block';
-            toggleBtn.style.transition = 'left 0.3s ease';
+            var isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isCollapsed) {
+                document.body.classList.add('sidebar-collapsed');
+            } else {
+                document.body.classList.remove('sidebar-collapsed');
+            }
+            if (btn) {
+                btn.textContent = isCollapsed ? '›' : '‹';
+                btn.style.display = 'flex';
+            }
+            return true;
         }
 
-        if (!sidebar) return window.dash_clientside.no_update;
-
-        var isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-
-        if (isCollapsed) {
-            sidebar.style.width = '0px';
-            sidebar.style.padding = '0px';
-            sidebar.style.overflow = 'hidden';
-            if (mainContent) mainContent.style.marginLeft = '0px';
-            if (toggleBtn) {
-                toggleBtn.style.left = '10px';
-                toggleBtn.innerHTML = '→';
-            }
-        } else {
-            sidebar.style.width = '250px';
-            sidebar.style.padding = '1rem';
-            sidebar.style.overflowY = 'auto';
-            if (mainContent) mainContent.style.marginLeft = '270px';
-            if (toggleBtn) {
-                toggleBtn.style.left = '260px';
-                toggleBtn.innerHTML = '☰';
-            }
+        // If sidebar isn't in the DOM yet (initial load race), wait for it
+        if (!applyState()) {
+            var observer = new MutationObserver(function(mutations, obs) {
+                if (applyState()) {
+                    obs.disconnect();
+                }
+            });
+            var root = document.getElementById('page-content') || document.body;
+            observer.observe(root, { childList: true, subtree: true });
         }
 
         return window.dash_clientside.no_update;

@@ -76,50 +76,117 @@ _register_balance_callbacks()
 # ── COMPONENTES UI ────────────────────────────────────────────────────────────
 def sidebar(username, current_path):
     def nav_link(href, icon, text):
-        active_style = {'background': 'rgba(255,255,255,0.15)'} if href == current_path else {}
-        return dcc.Link(
-            f'{icon} {text}',
-            href=href,
-            style={
-                'color': '#E2EAF4',
-                'textDecoration': 'none',
-                'padding': '10px 15px',
-                'display': 'block',
-                'borderRadius': '8px',
-                'marginBottom': '5px',
-                **active_style
-            }
-        )
+        is_active = href == current_path
+        return html.Div([
+            dcc.Link(
+                html.Div([
+                    html.Span(icon, className='nav-icon'),
+                    html.Span(text, className='nav-text'),
+                ], style={'display': 'flex', 'alignItems': 'center'}),
+                href=href,
+                className='sidebar-nav-link' + (' active' if is_active else ''),
+                style={
+                    'color': 'white' if is_active else '#7FA8D4',
+                    'textDecoration': 'none',
+                    'padding': '10px 14px',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                    'borderRadius': '8px',
+                    'marginBottom': '4px',
+                    'background': 'rgba(255,255,255,0.10)' if is_active else 'transparent',
+                    'borderLeft': '3px solid #5DADE2' if is_active else '3px solid transparent',
+                }
+            ),
+            html.Span(text, className='nav-tooltip'),
+        ], className='sidebar-nav-wrapper')
+
+    divider = html.Div(style={
+        'height': '1px',
+        'background': 'linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent)',
+        'margin': '16px 0',
+    })
 
     return html.Div([
-        html.Img(src='/assets/Logo_congroup-web2.png', style={'width': '180px', 'margin': '0 auto 1rem', 'display': 'block'}),
-        html.Hr(style={'borderColor': '#2E4A7A'}),
-        html.P("Navegación", style={'color': '#E2EAF4', 'fontWeight': '600', 'marginBottom': '1rem'}),
+        # Logo
+        html.Div([
+            html.Img(src='/assets/Logo_congroup-web2.png', style={
+                'width': '148px', 'display': 'block', 'margin': '0 auto',
+            }),
+        ], className='sidebar-brand', style={'padding': '10px 0 22px', 'textAlign': 'center'}),
+
+        # Nav label
+        html.Div("MENÚ", className='sidebar-menu-label', style={
+            'color': '#4A7299',
+            'fontSize': '10px',
+            'fontWeight': '700',
+            'letterSpacing': '1.8px',
+            'padding': '0 14px 10px',
+        }),
+
+        # Nav links
         nav_link('/', '📊', 'Resumen de Vendedores'),
         nav_link('/balance', '📋', 'Balance P&G'),
-        html.Hr(style={'borderColor': '#2E4A7A', 'margin': '1rem 0'}),
-        html.Small(f'👤 {username}', style={'color': '#94B8E0', 'display': 'block', 'marginBottom': '1rem', 'padding': '0 10px'}),
-        html.A('🚪 Cerrar sesión', href='/logout', style={
-            'color': 'white',
-            'background': '#C0392B',
-            'padding': '10px',
-            'textAlign': 'center',
-            'display': 'block',
-            'borderRadius': '8px',
-            'textDecoration': 'none',
-            'fontWeight': '600'
-        })
+
+        # Spacer that pushes user section to bottom
+        html.Div(style={'flex': '1', 'minHeight': '40px'}),
+
+        # Bottom: user + logout
+        html.Div([
+            divider,
+            html.Div([
+                html.Div('👤', className='sidebar-user-avatar', style={
+                    'width': '34px', 'height': '34px',
+                    'background': 'rgba(255,255,255,0.10)',
+                    'borderRadius': '50%',
+                    'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center',
+                    'fontSize': '15px', 'flexShrink': '0',
+                }),
+                html.Div([
+                    html.Div("Sesión activa", className='sidebar-user-label', style={
+                        'color': '#4A7299', 'fontSize': '10px',
+                        'fontWeight': '700', 'letterSpacing': '0.8px', 'textTransform': 'uppercase',
+                    }),
+                    html.Div(username, className='sidebar-username', style={
+                        'color': '#D6E8F7', 'fontSize': '13px', 'fontWeight': '600',
+                    }),
+                ], style={'marginLeft': '10px', 'overflow': 'hidden'}),
+            ], className='sidebar-user-row', style={
+                'display': 'flex', 'alignItems': 'center',
+                'padding': '0 4px 14px',
+            }),
+            html.A(
+                html.Div([
+                    html.Span('🚪', style={'fontSize': '14px', 'flexShrink': '0'}),
+                    html.Span('Cerrar sesión', className='sidebar-logout-text',
+                              style={'fontSize': '13px', 'fontWeight': '600'}),
+                ], style={'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center'}),
+                href='/logout',
+                className='sidebar-logout-btn',
+                style={
+                    'display': 'flex',
+                    'alignItems': 'center',
+                    'background': 'rgba(192,57,43,0.80)',
+                    'color': 'white',
+                    'padding': '10px 14px',
+                    'borderRadius': '8px',
+                    'textDecoration': 'none',
+                }
+            ),
+        ]),
     ], id='sidebar-wrapper', style={
         'position': 'fixed',
         'top': 0,
         'left': 0,
         'bottom': 0,
         'width': '250px',
-        'background': AZUL,
-        'padding': '1rem',
+        'background': 'linear-gradient(180deg, #0F1F3D 0%, #1A3260 60%, #1E3A72 100%)',
+        'padding': '1.25rem',
         'overflowY': 'auto',
-        'transition': 'all 0.3s ease',
-        'zIndex': '900'
+        'overflowX': 'hidden',
+        'zIndex': '900',
+        'display': 'flex',
+        'flexDirection': 'column',
+        'boxShadow': '4px 0 24px rgba(0,0,0,0.30)',
     })
 
 def login_form(error=False):
@@ -384,12 +451,13 @@ app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='sidebar-dummy', style={'display': 'none'}),
     html.Div(id='url-dummy', style={'display': 'none'}),
-    html.Button('☰', id='sidebar-toggle', n_clicks=0, style={
-        'position': 'fixed', 'top': '10px', 'left': '10px', 'zIndex': '1000',
-        'background': AZUL, 'color': 'white', 'border': 'none',
-        'padding': '10px 14px', 'borderRadius': '8px', 'fontSize': '18px',
-        'cursor': 'pointer', 'boxShadow': '0 2px 8px rgba(0,0,0,0.2)',
-        'display': 'none'
+    html.Button('‹', id='sidebar-toggle', n_clicks=0, style={
+        'background': AZUL,
+        'color': 'white',
+        'border': f'2px solid {AZUL_MED}',
+        'cursor': 'pointer',
+        'boxShadow': '0 2px 8px rgba(0,0,0,0.25)',
+        'display': 'none',  # JS sets to flex after applying saved state
     }),
     html.Div(id='page-content')
 ])
