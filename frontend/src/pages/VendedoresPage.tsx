@@ -241,7 +241,7 @@ export function VendedoresPage() {
             Exportar
           </Button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[70vh]" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full text-sm min-w-[900px]">
             <thead className="sticky top-0 z-20">
               <tr className="bg-congroup-blue text-white">
@@ -295,7 +295,7 @@ export function VendedoresPage() {
               Ventas por Vendedor y Tipo de Venta
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-auto max-h-[60vh]" style={{ WebkitOverflowScrolling: 'touch' }}>
             <table className="w-full text-sm min-w-[600px]">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-congroup-blue text-white">

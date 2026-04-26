@@ -338,7 +338,7 @@ function ResultadoTab({ data, onExport, empresa, año }: { data: { rows: any[]; 
             Descargar Excel
           </Button>
         </div>
-        <div className="overflow-x-auto max-h-[70vh] md:max-h-[calc(100vh-300px)]">
+        <div className="overflow-auto max-h-[70vh] md:max-h-[calc(100vh-300px)]" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full text-[13px] min-w-[800px]">
             <thead className="sticky top-0 z-20">
               <tr>
@@ -464,7 +464,7 @@ function VsPresupuestoTab({ data }: { data: { rows: any[]; meses: number[] } }) 
       <div className="p-4 border-b">
         <h3 className="text-base font-bold text-congroup-blue">Resultado vs Presupuesto</h3>
       </div>
-      <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+      <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 280px)', WebkitOverflowScrolling: 'touch' }}>
         <table className="w-full text-[13px]">
           <thead className="sticky top-0 z-20">
             <tr>
@@ -530,7 +530,7 @@ function PresupuestoTab({ data }: { data: { rows: any[]; meses: number[] } }) {
       <div className="p-4 border-b">
         <h3 className="text-base font-bold text-congroup-blue">Presupuesto</h3>
       </div>
-      <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+      <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 280px)', WebkitOverflowScrolling: 'touch' }}>
         <table className="w-full text-[13px]">
           <thead className="sticky top-0 z-20">
             <tr>
@@ -614,7 +614,7 @@ function VsAnteriorTab({ empresa, año }: { empresa: string; año: string }) {
 
       {isLoading ? <BalanceSkeleton /> : rows.length > 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 280px)', WebkitOverflowScrolling: 'touch' }}>
             <table className="w-full text-[13px]">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-congroup-blue text-white">

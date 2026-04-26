@@ -44,7 +44,7 @@ export function Layout() {
         <motion.header
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-slate-200/60"
+          className="sticky top-0 z-40 bg-white border-b border-slate-200/60 shadow-sm"
         >
           <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
             <div className="flex items-center gap-3">

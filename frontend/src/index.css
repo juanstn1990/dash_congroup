@@ -56,6 +56,12 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+    /* Prevent scroll bounce on iOS when sidebar is locked */
+    overscroll-behavior: none;
+  }
+  /* Faster tap response on mobile */
+  button, a, select, [role="button"] {
+    touch-action: manipulation;
   }
 }
 

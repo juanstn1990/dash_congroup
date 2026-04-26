@@ -36,6 +36,16 @@ export function Sidebar() {
     setMobileOpen(false);
   }, [location.pathname, setMobileOpen]);
 
+  // Body scroll lock when mobile sidebar is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   const sidebarContent = (
     <>
       {/* Glass overlay */}
@@ -86,7 +96,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 flex-1 px-3 pt-5 space-y-1.5 overflow-y-auto">
+      <nav className="relative z-10 flex-1 px-3 pt-5 space-y-1.5 overflow-y-auto overscroll-contain">
         <AnimatePresence>
           {!collapsed && (
             <motion.p
@@ -275,8 +285,9 @@ export function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] lg:hidden"
+              className="fixed inset-0 bg-black/60 z-[60] lg:hidden"
               onClick={() => setMobileOpen(false)}
+              style={{ touchAction: 'none' }}
             />
             {/* Drawer */}
             <motion.aside
