@@ -187,13 +187,13 @@ function ExpandableRow({ row, ri, cols, meses, empresa, año }: { row: any; ri: 
         onClick={toggle}
         className="cursor-pointer hover:opacity-80 transition-opacity"
       >
-        <td className="px-2 md:px-3 py-1 md:py-1.5 font-bold sticky left-0 top-0 z-10 text-xs md:text-[13px]" style={{ background: sBg, color: fg }}>
-          <div className="flex items-center gap-1">
-            {!isTotal && (expanded ? <ChevronUp className="w-3 h-3 opacity-60" /> : <ChevronDown className="w-3 h-3 opacity-60" />)}
+        <td className="px-1 md:px-2 py-1 md:py-1.5 font-bold sticky left-0 top-0 z-10 text-[10px] md:text-[12px] text-center w-[44px] min-w-[44px]" style={{ background: sBg, color: fg }}>
+          <div className="flex flex-col items-center gap-0.5">
+            {!isTotal && (expanded ? <ChevronUp className="w-2.5 h-2.5 opacity-60" /> : <ChevronDown className="w-2.5 h-2.5 opacity-60" />)}
             {row.Categoria}
           </div>
         </td>
-        <td className="px-2 md:px-3 py-1 md:py-1.5 sticky left-[80px] top-0 z-10 text-xs md:text-[13px]" style={{ background: sBg, color: fg, fontWeight: isTotal ? 'bold' : 'normal', paddingLeft: isTotal ? '8px' : '16px' }}>{row.Concepto}</td>
+        <td className="px-1.5 md:px-3 py-1 md:py-1.5 sticky left-[44px] top-0 z-10 text-[10px] md:text-[13px] min-w-[110px] max-w-[150px] md:min-w-[160px] md:max-w-[220px] break-words leading-tight" style={{ background: sBg, color: fg, fontWeight: isTotal ? 'bold' : 'normal', paddingLeft: isTotal ? '6px' : '12px' }}>{row.Concepto}</td>
         {cols.map((c, ci) => {
           const bg = dataBg(ci, ri, isTotal, meses.length);
           const val = row[`res_${c}`] || 0;
@@ -342,8 +342,8 @@ function ResultadoTab({ data, onExport, empresa, año }: { data: { rows: any[]; 
           <table className="w-full text-[13px] min-w-[800px]">
             <thead className="sticky top-0 z-20">
               <tr>
-                <th className="px-2 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-0 z-30" rowSpan={2}>Categoría</th>
-                <th className="px-2 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-[80px] z-30" rowSpan={2}>Concepto</th>
+                <th className="px-1 md:px-2 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-center sticky left-0 z-30 w-[44px] min-w-[44px]" rowSpan={2}>Cat</th>
+                <th className="px-1.5 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-[44px] z-30 min-w-[110px] max-w-[150px] md:min-w-[160px] md:max-w-[220px]" rowSpan={2}>Concepto</th>
                 {cols.map((c, i) => (
                   <th key={c} colSpan={2} className="px-1.5 md:px-2 py-1 md:py-1.5 text-white font-semibold text-center text-[11px] md:text-[13px]" style={{ background: hdrBg(i, meses.length) }}>
                     {typeof c === 'number' ? MESES_LABELS[c] : c}
@@ -386,7 +386,7 @@ function ResultadoTab({ data, onExport, empresa, año }: { data: { rows: any[]; 
               <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip contentStyle={{ background: '#1B3A6B', border: 'none', borderRadius: 8, color: '#fff' }} />
-              <Legend />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
               <Bar dataKey="pyg" name="PyG" radius={[4, 4, 0, 0]}>
                 {chartData.map((d, i) => <Cell key={i} fill={d.pyg >= 0 ? VERDE : ROJO} />)}
               </Bar>
@@ -404,7 +404,7 @@ function ResultadoTab({ data, onExport, empresa, año }: { data: { rows: any[]; 
               <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${v?.toFixed?.(0) ?? v}%`} />
               <Tooltip contentStyle={{ background: '#1B3A6B', border: 'none', borderRadius: 8, color: '#fff' }} formatter={(v: any) => `${Number(v).toFixed(2)}%`} />
-              <Legend />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
               <Line type="monotone" dataKey="bb_vn_pct" name="BB VN %" stroke="#1B3A6B" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="bn_vn_pct" name="BN VN %" stroke="#2E6BE6" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="bn_total_pct" name="BN Total %" stroke="#0D7C66" strokeWidth={2} dot={{ r: 3 }} />
@@ -422,7 +422,7 @@ function ResultadoTab({ data, onExport, empresa, año }: { data: { rows: any[]; 
               <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip contentStyle={{ background: '#1B3A6B', border: 'none', borderRadius: 8, color: '#fff' }} />
-              <Legend />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
               <Bar dataKey="bn_vn" name="BN VN" fill="#1B3A6B" radius={[4, 4, 0, 0]} />
               <Bar dataKey="bn_vo" name="BN VO" fill="#2E6BE6" radius={[4, 4, 0, 0]} />
               <Bar dataKey="bn_pos" name="BN Posventa" fill="#0D7C66" radius={[4, 4, 0, 0]} />
@@ -468,8 +468,8 @@ function VsPresupuestoTab({ data }: { data: { rows: any[]; meses: number[] } }) 
         <table className="w-full text-[13px]">
           <thead className="sticky top-0 z-20">
             <tr>
-              <th className="px-2 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-0 z-30" rowSpan={2}>Categoría</th>
-              <th className="px-2 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-[80px] z-30" rowSpan={2}>Concepto</th>
+              <th className="px-1 md:px-2 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-center sticky left-0 z-30 w-[44px] min-w-[44px]" rowSpan={2}>Cat</th>
+              <th className="px-1.5 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-[44px] z-30 min-w-[110px] max-w-[150px] md:min-w-[160px]" rowSpan={2}>Concepto</th>
               {cols.map((c, i) => (
                 <th key={c} colSpan={4} className="px-1.5 md:px-2 py-1 md:py-1.5 text-white font-semibold text-center text-[11px] md:text-[13px]" style={{ background: hdrBg(i, meses.length) }}>
                   {typeof c === 'number' ? MESES_LABELS[c] : c}
@@ -494,8 +494,8 @@ function VsPresupuestoTab({ data }: { data: { rows: any[]; meses: number[] } }) 
               const sBg = isTotal ? GRIS_TOTAL : (ri % 2 === 1 ? ROW_STRIPE : 'white');
               return (
                 <tr key={ri}>
-                  <td className="px-2 md:px-3 py-1 md:py-1.5 font-bold sticky left-0 top-0 z-10 text-xs md:text-[13px]" style={{ background: sBg, color: fg }}>{row.Categoria}</td>
-                  <td className="px-2 md:px-3 py-1 md:py-1.5 sticky left-[80px] top-0 z-10 text-xs md:text-[13px]" style={{ background: sBg, color: fg, fontWeight: isTotal ? 'bold' : 'normal', paddingLeft: isTotal ? '8px' : '16px' }}>{row.Concepto}</td>
+                  <td className="px-1 md:px-2 py-1 md:py-1.5 font-bold sticky left-0 top-0 z-10 text-[10px] md:text-[12px] text-center w-[44px] min-w-[44px]" style={{ background: sBg, color: fg }}>{row.Categoria}</td>
+                  <td className="px-1.5 md:px-3 py-1 md:py-1.5 sticky left-[44px] top-0 z-10 text-[10px] md:text-[13px] min-w-[110px] max-w-[150px] md:min-w-[160px] break-words leading-tight" style={{ background: sBg, color: fg, fontWeight: isTotal ? 'bold' : 'normal', paddingLeft: isTotal ? '6px' : '12px' }}>{row.Concepto}</td>
                   {cols.map((c, ci) => {
                     const bg = dataBg(ci, ri, isTotal, meses.length);
                     const real = row[`real_${c}`] || 0;
@@ -534,8 +534,8 @@ function PresupuestoTab({ data }: { data: { rows: any[]; meses: number[] } }) {
         <table className="w-full text-[13px]">
           <thead className="sticky top-0 z-20">
             <tr>
-              <th className="px-2 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-0 z-30" rowSpan={2}>Categoría</th>
-              <th className="px-2 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-[80px] z-30" rowSpan={2}>Concepto</th>
+              <th className="px-1 md:px-2 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-center sticky left-0 z-30 w-[44px] min-w-[44px]" rowSpan={2}>Cat</th>
+              <th className="px-1.5 md:px-3 py-1.5 md:py-2 bg-congroup-blue text-white font-semibold text-left sticky left-[44px] z-30 min-w-[110px] max-w-[150px] md:min-w-[160px]" rowSpan={2}>Concepto</th>
               {cols.map((c, i) => (
                 <th key={c} colSpan={2} className="px-1.5 md:px-2 py-1 md:py-1.5 text-white font-semibold text-center text-[11px] md:text-[13px]" style={{ background: hdrBg(i, meses.length) }}>
                   {typeof c === 'number' ? MESES_LABELS[c] : c}
@@ -558,8 +558,8 @@ function PresupuestoTab({ data }: { data: { rows: any[]; meses: number[] } }) {
               const sBg = isTotal ? GRIS_TOTAL : (ri % 2 === 1 ? ROW_STRIPE : 'white');
               return (
                 <tr key={ri}>
-                  <td className="px-2 md:px-3 py-1 md:py-1.5 font-bold sticky left-0 top-0 z-10 text-xs md:text-[13px]" style={{ background: sBg, color: fg }}>{row.Categoria}</td>
-                  <td className="px-2 md:px-3 py-1 md:py-1.5 sticky left-[80px] top-0 z-10 text-xs md:text-[13px]" style={{ background: sBg, color: fg, fontWeight: isTotal ? 'bold' : 'normal', paddingLeft: isTotal ? '8px' : '16px' }}>{row.Concepto}</td>
+                  <td className="px-1 md:px-2 py-1 md:py-1.5 font-bold sticky left-0 top-0 z-10 text-[10px] md:text-[12px] text-center w-[44px] min-w-[44px]" style={{ background: sBg, color: fg }}>{row.Categoria}</td>
+                  <td className="px-1.5 md:px-3 py-1 md:py-1.5 sticky left-[44px] top-0 z-10 text-[10px] md:text-[13px] min-w-[110px] max-w-[150px] md:min-w-[160px] break-words leading-tight" style={{ background: sBg, color: fg, fontWeight: isTotal ? 'bold' : 'normal', paddingLeft: isTotal ? '6px' : '12px' }}>{row.Concepto}</td>
                   {cols.map((c, ci) => {
                     const bg = dataBg(ci, ri, isTotal, meses.length);
                     const val = row[`ppto_${c}`] || 0;

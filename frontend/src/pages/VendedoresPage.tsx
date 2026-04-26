@@ -175,7 +175,7 @@ export function VendedoresPage() {
               <Tooltip
                 contentStyle={{ background: '#1B3A6B', border: 'none', borderRadius: 8, color: '#fff' }}
               />
-              <Legend />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
               <Bar dataKey="ventas" name="Ventas" fill={COLORS.verde} radius={[4, 4, 0, 0]} />
               <Bar dataKey="pendientes" name="Pendientes" fill={COLORS.naranja} radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -196,7 +196,7 @@ export function VendedoresPage() {
               <Tooltip
                 contentStyle={{ background: '#1B3A6B', border: 'none', borderRadius: 8, color: '#fff' }}
               />
-              <Legend />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
               <Line type="monotone" dataKey="media_bb1" name="Media BB1" stroke="#93C5FD" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="media_bb2" name="Media BB2" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="media_bb3" name="Media BB3" stroke="#1E3A8A" strokeWidth={2} dot={{ r: 3 }} />
@@ -215,7 +215,7 @@ export function VendedoresPage() {
               <Tooltip
                 contentStyle={{ background: '#1B3A6B', border: 'none', borderRadius: 8, color: '#fff' }}
               />
-              <Legend />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
               <Bar dataKey="subidos" name="Subidos (Con Expediente)" stackId="a" fill={COLORS.verde} radius={[4, 4, 0, 0]} />
               <Bar dataKey="pendientes" name="Pendientes (Sin Expediente)" stackId="a" fill={COLORS.rojo} radius={[4, 4, 0, 0]} />
             </BarChart>
