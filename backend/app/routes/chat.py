@@ -35,7 +35,10 @@ Tabla stockvehiculosmazdas:
 - VIN: cgib_vin
 - Fecha matriculación: cgib_fechamatriculacion
 
-REGLAS:
+REGLAS CRÍTICAS DE SQL:
+- SIEMPRE pon entre comillas dobles las columnas con caracteres especiales (@, espacios, puntos).
+  CORRECTO:   "_cgib_vendedormg_value@OData.Community.Display.V1.FormattedValue"
+  INCORRECTO: _cgib_vendedormg_value@OData.Community.Display.V1.FormattedValue
 - Usa YEAR() y MONTH() para filtrar fechas.
 - Usa TRY_CAST para conversiones de fecha.
 - Máximo 50 filas en el resultado (añade LIMIT 50 si no hay límite).
