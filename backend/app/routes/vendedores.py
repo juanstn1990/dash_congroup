@@ -1,6 +1,7 @@
 """Vendedores API routes."""
 import math
 from typing import Optional
+import pandas as pd
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 
