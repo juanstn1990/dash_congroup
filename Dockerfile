@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app/ ./app/
 COPY --from=frontend-builder /app/dist ./static
+COPY mazda.duckdb /data/mazda.duckdb
 
 ENV DUCKDB_PATH=/data/mazda.duckdb
 ENV PYTHONPATH=/app
