@@ -1,8 +1,9 @@
 """FastAPI main application."""
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.routes import auth, vendedores, balance
 
 app = FastAPI(
@@ -31,5 +32,18 @@ def health_check():
 
 # Serve frontend static files (production build)
 static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+
 if os.path.isdir(static_dir):
-    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+    # Serve assets folder
+    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
+
+    @app.get("/{path:path}")
+    async def serve_spa(path: str):
+        if path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not found")
+        # Serve actual files if they exist (e.g. Logo_congroup-web2.png)
+        file_path = os.path.join(static_dir, path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        # SPA fallback: serve index.html for React Router routes
+        return FileResponse(os.path.join(static_dir, "index.html"))
