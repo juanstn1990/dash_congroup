@@ -3,20 +3,22 @@ version: "3.8"
 services:
   backend:
     build: ./backend
-    container_name: congroup-backend
-    volumes:
-      - ./mazda.duckdb:/data/mazda.duckdb:ro
-    environment:
-      - DUCKDB_PATH=/data/mazda.duckdb
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
+    container_name: congro"Acción"
+Commit: Remove obsolete files and scripts related to the Congroup Analytics Dashboard, including queries, requirements, and Docker management scripts. 
+##########################################
+### Download Github Archive Started...
+### Sun, 26 Apr 2026 01:39:42 GMT
+##########################################
 
-  frontend:
-    build: ./frontend
-    container_name: congroup-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2B done
+#1 DONE 0.0s
+ERROR: failed to build: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory
+##########################################
+### Error
+### Sun, 26 Apr 2026 01:39:43 GMT
+##########################################
+
+Command failed with exit code 1: docker buildx build --network host -f /etc/easypanel/projects/congroup/analytics/code/Dockerfile -t easypanel/congroup/analytics --label 'keep=true' --no-cache --build-arg 'GIT_SHA=cc1d89164712eb3eb2e4108bb3b942381846daed' /etc/easypanel/projects/congroup/analytics/code/
