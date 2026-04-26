@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { ChatWidget } from './ChatWidget';
 import { useSidebar } from '@/hooks/useSidebar';
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
@@ -90,6 +91,8 @@ export function Layout() {
           <Outlet />
         </div>
       </main>
+
+      <ChatWidget />
     </div>
   );
 }

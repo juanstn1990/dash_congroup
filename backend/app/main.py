@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.routes import auth, vendedores, balance
+from app.routes import auth, vendedores, balance, chat
 
 app = FastAPI(
     title="Congroup Analytics API",
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(vendedores.router, prefix="/api/vendedores", tags=["vendedores"])
 app.include_router(balance.router, prefix="/api/balance", tags=["balance"])
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
 
 @app.get("/api/health")

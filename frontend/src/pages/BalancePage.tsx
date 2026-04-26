@@ -222,28 +222,28 @@ function ExpandableRow({ row, ri, cols, meses, empresa, año }: { row: any; ri: 
                 ) : !cuentasData?.cuentas?.length ? (
                   <div className="text-sm text-gray-500 py-2">No hay cuentas asociadas para esta categoría.</div>
                 ) : (
-                  <table className="w-full text-[12px] min-w-max">
+                  <table className="w-full text-[10px] md:text-[12px] min-w-max">
                     <thead>
                       <tr className="bg-congroup-blue text-white">
-                        <th className="px-2 py-1 text-left font-semibold rounded-tl whitespace-nowrap">Cuenta</th>
-                        <th className="px-2 py-1 text-left font-semibold whitespace-nowrap">Nombre Cuenta</th>
+                        <th className="px-1.5 md:px-2 py-1 text-left font-semibold rounded-tl whitespace-nowrap">Cuenta</th>
+                        <th className="px-1.5 md:px-2 py-1 text-left font-semibold max-w-[100px] md:max-w-[200px]">Nombre Cuenta</th>
                         {cuentasData.meses.map((m: number) => (
-                          <th key={m} className="px-2 py-1 text-right font-semibold whitespace-nowrap">{MESES_LABELS[m]}</th>
+                          <th key={m} className="px-1.5 md:px-2 py-1 text-right font-semibold whitespace-nowrap">{MESES_LABELS[m]}</th>
                         ))}
-                        <th className="px-2 py-1 text-right font-semibold rounded-tr whitespace-nowrap">Total</th>
+                        <th className="px-1.5 md:px-2 py-1 text-right font-semibold rounded-tr whitespace-nowrap">Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       {cuentasData.cuentas.map((c: any, ci: number) => (
                         <tr key={ci} className={ci % 2 === 1 ? 'bg-white/60' : 'bg-white'}>
-                          <td className="px-2 py-1 font-mono text-[11px] whitespace-nowrap">{c.cuenta}</td>
-                          <td className="px-2 py-1 whitespace-nowrap">{c.nombre_cuenta}</td>
+                          <td className="px-1.5 md:px-2 py-1 font-mono text-[9px] md:text-[11px] whitespace-nowrap">{c.cuenta}</td>
+                          <td className="px-1.5 md:px-2 py-1 max-w-[100px] md:max-w-[200px] break-words leading-tight">{c.nombre_cuenta}</td>
                           {cuentasData.meses.map((m: number) => (
-                            <td key={m} className="px-2 py-1 text-right tabular-nums whitespace-nowrap" style={{ color: (c[`saldo_${m}`] || 0) < 0 ? ROJO : '#1C2B3A' }}>
+                            <td key={m} className="px-1.5 md:px-2 py-1 text-right tabular-nums whitespace-nowrap" style={{ color: (c[`saldo_${m}`] || 0) < 0 ? ROJO : '#1C2B3A' }}>
                               {formatAccounting(c[`saldo_${m}`] || 0)}
                             </td>
                           ))}
-                          <td className="px-2 py-1 text-right tabular-nums font-bold whitespace-nowrap" style={{ color: c.total < 0 ? ROJO : '#1C2B3A' }}>
+                          <td className="px-1.5 md:px-2 py-1 text-right tabular-nums font-bold whitespace-nowrap" style={{ color: c.total < 0 ? ROJO : '#1C2B3A' }}>
                             {formatAccounting(c.total)}
                           </td>
                         </tr>
